@@ -315,16 +315,16 @@
   "Style property"
   (control-id :unsigned-short)
   (property-id :unsigned-short)
-  (property-value :unsigned-short))
+  (property-value :int))
 
-(defstruct gui-style-property
+(defstruct gui-style-prop
   control-id property-id property-value)
 
 (defmethod translate-into-foreign-memory (object (type gui-style-prop-type) pointer)
   (with-foreign-slots ((control-id property-id property-value) pointer (:struct %gui-style-prop))
     (setf control-id (coerce (gui-style-prop-control-id object) 'unsigned-short))
     (setf property-id (coerce (gui-style-prop-property-id object) 'unsigned-short))
-    (setf property-value (coerce (gui-style-prop-property-value object) 'unsigned-short))))
+    (setf property-value (coerce (gui-style-prop-property-value object) 'integer))))
 
 (defmethod translate-from-foreign (pointer (type gui-style-prop-type))
   (with-foreign-slots ((control-id property-id property-value) pointer (:struct %gui-style-prop))
@@ -781,7 +781,7 @@
 
 ;; RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
 (defcfun "GuiSliderBar" :float
-  "Slidef bar control, returns selected value"
+  "Slider bar control, returns selected value"
   (bounds (:struct cl-raylib::%rectangle))
   (text-left :string)
   (text-right :string)

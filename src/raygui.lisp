@@ -670,7 +670,7 @@
 ;; RAYGUIAPI void GuiPanel(Rectangle bounds);                                                              // Panel control, useful to group controls
 (defcfun "GuiPanel" :void
   "Panel control, useful to group controls"
-  (bound (:struct cl-raylib::%rectangle)))
+  (bounds (:struct cl-raylib::%rectangle)))
 
 ;; RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, Rectangle content, Vector2 *scroll);               // Scroll Panel control
 (defcfun "GuiScrollPanel" (:struct cl-raylib::%rectangle)
@@ -941,7 +941,7 @@
   (y :int))
 
 ;; RAYGUIAPI bool GuiCheckIconPixel(int iconId, int x, int y);     // Check icon pixel value
-(defcfun "GuiCheckIconPixel" :void
+(defcfun "GuiCheckIconPixel" :bool
   "Check icon pixel value"
   (icon-id :int)
   (x :int)

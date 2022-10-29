@@ -7,14 +7,14 @@
    #:gui-style-prop-property-id
    #:gui-style-prop-property-value
 
-   #:+gui-state-normal+
-   #:+gui-state-focused+ 
-   #:+gui-state-pressed+ 
-   #:+gui-state-disabled+
+   #:+state-normal+
+   #:+state-focused+ 
+   #:+state-pressed+ 
+   #:+state-disabled+
 
-   #:+gui-text-align-left+ 
-   #:+gui-text-align-center+
-   #:+gui-text-align-right+
+   #:+text-align-left+ 
+   #:+text-align-center+
+   #:+text-align-right+
 
    #:+default+      
    #:+label+        

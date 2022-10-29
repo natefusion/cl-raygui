@@ -17,7 +17,7 @@
   :author "natefusion"
   :license "MIT"
   :description "Common Lisp bindings of raygui"
-  :depends-on (#:cffi-libffi
+  :depends-on (#:cffi
                #:alexandria
                #:cl-raylib)
   :serial t

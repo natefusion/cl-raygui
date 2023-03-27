@@ -8,3 +8,10 @@
  (let ((name (translate-camelcase-name spec :upper-initial-p t :special-words '("2D" "3D" "FPS" "HSV" "POT" "RES" "TTF" "BRDF" "URL"))))
   (if varp (subseq name 1 (1- (length name))) name)))
 
+(defun reset-state ()
+  (gui-enable)
+  (gui-unlock)
+  (gui-fade 1.0)
+  (gui-set-icon-scale 1)
+  (gui-load-style-default))
+

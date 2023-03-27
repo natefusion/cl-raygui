@@ -2,6 +2,8 @@
   (:nicknames #:raygui)
   (:use #:cl #:cffi #:alexandria #:cl-raylib)
   (:export
+   #:reset-state
+   
    #:make-gui-style-prop
    #:gui-style-prop-control-id
    #:gui-style-prop-property-id

@@ -696,9 +696,9 @@
   "Scroll panel control"
   (let ((foreign-scroll (gensym)))
     `(cffi:with-foreign-object (,foreign-scroll '(:struct cl-raylib::%vector2))
-       (convert-into-foreign-memory ,scroll '(:struct cl-raylib::%vector2) ,foreign-scroll)
+       (setf (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)) ,scroll)
        (prog1 (%gui-scroll-panel bounds text content foreign-scroll)
-         (setf ,scroll (convert-from-foreign ,foreign-scroll '(:struct cl-raylib::%vector2)))))))
+         (setf ,scroll (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)))))))
 
 ;; // Basic controls set
 ;; RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
@@ -744,7 +744,7 @@
 
 (defmacro gui-toggle-group (bounds text active)
   "Toggle Group control, returns active toggle index"
-  `(%gui-toggle-group bounds ,text (bool-int ,active)))
+  `(%gui-toggle-group ,bounds ,text (bool-int ,active)))
 
 ;; RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
 (defcfun ("GuiCheckBox" %gui-check-box) :int
@@ -774,9 +774,9 @@
   "Dropdown Box control, returns selected item"
   (let ((foreign-active (gensym)))
     `(cffi:with-foreign-object (,foreign-active :int)
-       (convert-into-foreign-memory ,active :int ,foreign-active)
+       (setf (cffi:mem-ref ,foreign-active :int) ,active)
        (prog1 (int-bool (%gui-dropdown-box ,bounds ,text ,foreign-active (bool-int ,edit-mode)))
-         (setf ,active (convert-from-foreign ,foreign-active :int))))))
+         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
 
 ;; RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
 (defcfun ("GuiSpinner" %gui-spinner) :int
@@ -791,9 +791,9 @@
   "Spinner control, returns selected value"
   (let ((foreign-value (gensym)))
     `(cffi:with-foreign-object (,foreign-value :int)
-       (convert-into-foreign-memory ,value :int ,foreign-value)
+       (setf (cffi:mem-ref ,foreign-value :int) ,value)
        (prog1 (int-bool (%gui-spinner ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
-         (setf ,value (convert-from-foreign ,foreign-value :int))))))
+         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
 
 ;; RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
 (defcfun ("GuiValueBox" %gui-value-box) :int
@@ -808,9 +808,9 @@
   "Value Box control, updates input text with numbers"
   (let ((foreign-value (gensym)))
     `(cffi:with-foreign-object (,foreign-value :int)
-       (convert-into-foreign-memory ,value :int ,foreign-value)
+       (setf (cffi:mem-ref ,foreign-value :int) ,value)
        (prog1 (int-bool (%gui-value-box ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
-         (setf ,value (convert-from-foreign ,foreign-value :int))))))
+         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
 
 ;; RAYGUIAPI bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
 (defcfun ("GuiTextBox" %gui-text-box) :int
@@ -911,13 +911,13 @@
     `(cffi:with-foreign-objects ((,foreign-text :string)
                                  (,foreign-focus :int)
                                  (,foreign-scroll-index :int))
-       (convert-into-foreign-memory ,text :string ,foreign-text)
-       (convert-into-foreign-memory ,focus :int ,foreign-focus)
-       (convert-into-foreign-memory ,scroll-index :int ,foreign-scroll-index)
+       (setf (cffi:mem-ref ,foreign-text :string) ,text
+             (cffi:mem-ref ,foreign-focus :int) ,focus
+             (cffi:mem-ref ,foreign-scroll-index :int) ,scroll-index)
        (prog1 (%gui-list-view-ex ,bounds ,foreign-text ,count ,foreign-focus ,foreign-scroll-index ,active)
-         (setf ,text (convert-from-foreign ,foreign-value :string)
-               ,focus (convert-from-foreign ,foreign-focus :int)
-               ,scroll-index (convert-from-foreign ,foreign-scroll-index :int))))))
+         (setf ,text (cffi:mem-ref ,foreign-text :string)
+               ,focus (cffi:mem-ref ,foreign-focus :int)
+               ,scroll-index (cffi:mem-ref ,foreign-scroll-index :int))))))
 
 ;; RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
 (defcfun "GuiMessageBox" :int
@@ -941,9 +941,9 @@
   "Text Input Box control, ask for text, supports secret"
   (let ((foreign-secret-view-active (gensym)))
     `(cffi:with-foreign-object (,foreign-secret-view-active :int)
-       (convert-into-foreign-memory ,secret-view-active :int ,foreign-secret-view-active)
+       (setf (cffi:mem-ref ,foreign-secret-view-active :int) ,secret-view-active)
        (prog1 (%gui-list-view-ex ,bounds ,title ,message ,buttons ,text ,text-max-size ,foreign-secret-view-active)
-         (setf ,secret-view-active (convert-from-foreign ,foreign-secret-view-active :int))))))
+         (setf ,secret-view-active (cffi:mem-ref ,foreign-secret-view-active :int) )))))
 
 ;; RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
 (defcfun "GuiColorPicker" :uint

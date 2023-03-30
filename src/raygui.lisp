@@ -702,7 +702,7 @@
 
 ;; // Basic controls set
 ;; RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
-(defcfun ("GuiLabel" %gui-label) :void
+(defcfun "GuiLabel" :void
   "Label control, shows text"
   (bounds (:struct cl-raylib::%rectangle))
   (text :string))
@@ -754,7 +754,7 @@
 
 (defmacro gui-check-box (bounds text checked)
   "Check Box control, returns true when active"
-  `(int-bool (%gui-check-box bounds ,text (bool-int ,active))))
+  `(int-bool (%gui-check-box ,bounds ,text (bool-int ,checked))))
 
 ;; RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
 (defcfun "GuiComboBox" :int

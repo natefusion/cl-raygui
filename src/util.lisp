@@ -15,3 +15,9 @@
   (gui-set-icon-scale 1)
   (gui-load-style-default))
 
+(defmacro int-bool (n)
+  (if (eql n 1) t nil))
+
+(defmacro bool-int (n)
+  (if n 1 0))
+

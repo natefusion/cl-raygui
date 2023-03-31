@@ -821,7 +821,12 @@
 
 (defmacro gui-text-box (bounds text text-size edit-mode)
   "Text Box control, updates input text"
-  `(int-bool (%gui-text-box ,bounds ,text ,text-size (bool-int ,edit-mode))))
+  (let ((foreign-text (gensym))
+        (foreign-size (gensym)))
+    `(cffi:with-foreign-pointer (,foreign-text ,text-size ,foreign-size)
+       (cffi:lisp-string-to-foreign ,text ,foreign-text ,foreign-size)
+       (prog1 (int-bool (%gui-text-box ,bounds ,foreign-text ,text-size (bool-int ,edit-mode)))
+         (setf ,text (cffi:foreign-string-to-lisp ,foreign-text))))))
 
 ;; RAYGUIAPI bool GuiTextBoxMulti(Rectangle bounds, char *text, int textSize, bool editMode);              // Text Box control with multiple lines
 (defcfun ("GuiTextBoxMulti" %gui-text-box-multi) :int
@@ -832,7 +837,12 @@
 
 (defmacro gui-text-box-multi (bounds text text-size edit-mode)
   "Text Box control with multiple lines"
-  `(int-bool (%gui-text-box-multi ,bounds ,text ,text-size (bool-int ,edit-mode))))
+  (let ((foreign-text (gensym))
+        (foreign-size (gensym)))
+    `(cffi:with-foreign-pointer (,foreign-text ,text-size ,foreign-size)
+       (cffi:lisp-string-to-foreign ,text ,foreign-text ,foreign-size)
+       (prog1 (int-bool (%gui-text-box-multi ,bounds ,foreign-text ,text-size (bool-int ,edit-mode)))
+         (setf ,text (cffi:foreign-string-to-lisp ,foreign-text))))))
 
 ;; RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
 (defcfun "GuiSlider" :float

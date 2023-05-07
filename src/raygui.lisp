@@ -397,10 +397,10 @@
 
 ;; RAYGUIAPI int GuiTabBar(Rectangle bounds, const char **text, int count, int *active);                   // Tab Bar control, returns TAB to be closed or -1
 (defcfun ("GuiTabBar" %gui-tab-bar) :int
-  (bounds (:struct cl-raylih::%rectangle))
+  (bounds (:struct cl-raylib::%rectangle))
   (text (:pointer :string))
   (count :int)
-  (active (:pointer int)))
+  (active (:pointer :int)))
 
 (defmacro gui-tab-bar (bounds text count active)
   "Tab Bar control, returns TAB to be closed or -1"
@@ -719,7 +719,7 @@
 ;; RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
 (defcfun "GuiSetTooltip" :void
   "Set tooltip string"
-  (:tooltip :string))
+  (tooltip :string))
 
 ;; // Icons functionality
 ;; RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)

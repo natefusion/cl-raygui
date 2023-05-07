@@ -129,155 +129,137 @@
   (:border-width 12)
   (:text-padding 13)
   (:text-alignment 14)
-  (:reserved 15))
+  (:reserved 15)
+  
+  ;; // Gui extended properties depend on control
+  ;; // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
+  ;; //----------------------------------------------------------------------------------
 
-;; // Gui extended properties depend on control
-;; // NOTE: RAYGUI_MAX_PROPS_EXTENDED properties (by default 8 properties)
-;; //----------------------------------------------------------------------------------
+  ;; // DEFAULT extended properties
+  ;; // NOTE: Those properties are common to all controls or global
+  ;; typedef enum {
+  ;;     TEXT_SIZE = 16,             // Text size (glyphs max height)
+  ;;     TEXT_SPACING,               // Text spacing between glyphs
+  ;;     LINE_COLOR,                 // Line control color
+  ;;     BACKGROUND_COLOR,           // Background color
+  ;; } GuiDefaultProperty;
 
-;; // DEFAULT extended properties
-;; // NOTE: Those properties are common to all controls or global
-;; typedef enum {
-;;     TEXT_SIZE = 16,             // Text size (glyphs max height)
-;;     TEXT_SPACING,               // Text spacing between glyphs
-;;     LINE_COLOR,                 // Line control color
-;;     BACKGROUND_COLOR,           // Background color
-;; } GuiDefaultProperty;
-
-(defcenum gui-default-property
   (:text-size 16)
   (:text-spacing 17)
   (:line-color 18)
-  (:background-color 19))
+  (:background-color 19)
 
-;; // Label
-;; //typedef enum { } GuiLabelProperty;
+  ;; // Toggle/ToggleGroup
+  ;; typedef enum {
+  ;;     GROUP_PADDING = 16,         // ToggleGroup separation between toggles
+  ;; } GuiToggleProperty;
 
-;; // Button/Spinner
-;; //typedef enum { } GuiButtonProperty;
+  (:group-padding 16)
+  
+  ;; // Slider/SliderBar
+  ;; typedef enum {
+  ;;     SLIDER_WIDTH = 16,          // Slider size of internal bar
+  ;;     SLIDER_PADDING              // Slider/SliderBar internal bar padding
+  ;; } GuiSliderProperty;
 
-;; // Toggle/ToggleGroup
-;; typedef enum {
-;;     GROUP_PADDING = 16,         // ToggleGroup separation between toggles
-;; } GuiToggleProperty;
-
-(defcenum gui-toggle-property
-  (:group-padding 16))
-
-;; // Slider/SliderBar
-;; typedef enum {
-;;     SLIDER_WIDTH = 16,          // Slider size of internal bar
-;;     SLIDER_PADDING              // Slider/SliderBar internal bar padding
-;; } GuiSliderProperty;
-
-(defcenum gui-slider-property
   (:slider-width 16)
-  (:slider-padding 17))
+  (:slider-padding 17)
+  
+  ;; // ProgressBar
+  ;; typedef enum {
+  ;;     PROGRESS_PADDING = 16,      // ProgressBar internal padding
+  ;; } GuiProgressBarProperty;
 
-;; // ProgressBar
-;; typedef enum {
-;;     PROGRESS_PADDING = 16,      // ProgressBar internal padding
-;; } GuiProgressBarProperty;
+  (:progress-padding 16)
 
-(defcenum gui-progress-bar-property
-  (:progress-padding 16))
+  ;; // ScrollBar
+  ;; typedef enum {
+  ;;     ARROWS_SIZE = 16,
+  ;;     ARROWS_VISIBLE,
+  ;;     SCROLL_SLIDER_PADDING,      // (SLIDERBAR, SLIDER_PADDING)
+  ;;     SCROLL_SLIDER_SIZE,
+  ;;     SCROLL_PADDING,
+  ;;     SCROLL_SPEED,
+  ;; } GuiScrollBarProperty;
 
-;; // ScrollBar
-;; typedef enum {
-;;     ARROWS_SIZE = 16,
-;;     ARROWS_VISIBLE,
-;;     SCROLL_SLIDER_PADDING,      // (SLIDERBAR, SLIDER_PADDING)
-;;     SCROLL_SLIDER_SIZE,
-;;     SCROLL_PADDING,
-;;     SCROLL_SPEED,
-;; } GuiScrollBarProperty;
-
-(defcenum gui-scroll-bar-property
   (:arrows-size 16)
   (:arrows-visible 17)
   (:scroll-slider-padding 18)
   (:scroll-slider-size 19)
   (:scroll-padding 20)
-  (:scroll-speed 21))
+  (:scroll-speed 21)
 
-;; // CheckBox
-;; typedef enum {
-;;     CHECK_PADDING = 16          // CheckBox internal check padding
-;; } GuiCheckBoxProperty;
+  ;; // CheckBox
+  ;; typedef enum {
+  ;;     CHECK_PADDING = 16          // CheckBox internal check padding
+  ;; } GuiCheckBoxProperty;
 
-(defcenum gui-check-box-property
-  (:check-padding 16))
+  (:check-padding 16)
+  
+  ;; // ComboBox
+  ;; typedef enum {
+  ;;     COMBO_BUTTON_WIDTH = 16,    // ComboBox right button width
+  ;;     COMBO_BUTTON_SPACING        // ComboBox button separation
+  ;; } GuiComboBoxProperty;
 
-;; // ComboBox
-;; typedef enum {
-;;     COMBO_BUTTON_WIDTH = 16,    // ComboBox right button width
-;;     COMBO_BUTTON_SPACING        // ComboBox button separation
-;; } GuiComboBoxProperty;
-
-(defcenum gui-combo-box-property
   (:combo-button-width 16)
-  (:combo-button-spacing 17))
+  (:combo-button-spacing 17)
+  
+  ;; // DropdownBox
+  ;; typedef enum {
+  ;;     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
+  ;;     DROPDOWN_ITEMS_SPACING      // DropdownBox items separation
+  ;; } GuiDropdownBoxProperty;
 
-;; // DropdownBox
-;; typedef enum {
-;;     ARROW_PADDING = 16,         // DropdownBox arrow separation from border and items
-;;     DROPDOWN_ITEMS_SPACING      // DropdownBox items separation
-;; } GuiDropdownBoxProperty;
-
-(defcenum gui-dropdown-box-property
   (:arrow-padding 16)
-  (:dropdown-items-spacing 17))
+  (:dropdown-items-spacing 17)
+  
+  ;; // TextBox/TextBoxMulti/ValueBox/Spinner
+  ;; typedef enum {
+  ;;     TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
+  ;;     TEXT_LINES_SPACING,         // TextBoxMulti lines separation
+  ;;     TEXT_ALIGNMENT_VERTICAL,    // TextBoxMulti vertical alignment: 0-CENTERED, 1-UP, 2-DOWN
+  ;;     TEXT_MULTILINE,             // TextBox supports multiple lines
+  ;;     TEXT_WRAP_MODE              // TextBox wrap mode for multiline: 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP
+  ;; } GuiTextBoxProperty;
 
-;; // TextBox/TextBoxMulti/ValueBox/Spinner
-;; typedef enum {
-;;     TEXT_INNER_PADDING = 16,    // TextBox/TextBoxMulti/ValueBox/Spinner inner text padding
-;;     TEXT_LINES_SPACING,         // TextBoxMulti lines separation
-;;     TEXT_ALIGNMENT_VERTICAL,    // TextBoxMulti vertical alignment: 0-CENTERED, 1-UP, 2-DOWN
-;;     TEXT_MULTILINE,             // TextBox supports multiple lines
-;;     TEXT_WRAP_MODE              // TextBox wrap mode for multiline: 0-NO_WRAP, 1-CHAR_WRAP, 2-WORD_WRAP
-;; } GuiTextBoxProperty;
-
-(defcenum gui-text-box-property
   (:text-inner-padding 16)
   (:text-lines-spacing 17)
   (:text-alignment-vertical 18)
   (:text-multiline 19)
-  (:text-wrap-mode 20))
+  (:text-wrap-mode 20)
+  
+  ;; // Spinner
+  ;; typedef enum {
+  ;;     SPIN_BUTTON_WIDTH = 16,     // Spinner left/right buttons width
+  ;;     SPIN_BUTTON_SPACING,        // Spinner buttons separation
+  ;; } GuiSpinnerProperty;
 
-;; // Spinner
-;; typedef enum {
-;;     SPIN_BUTTON_WIDTH = 16,     // Spinner left/right buttons width
-;;     SPIN_BUTTON_SPACING,        // Spinner buttons separation
-;; } GuiSpinnerProperty;
-
-(defcenum gui-spinner-property
   (:spin-button-width 16)
-  (:spin-button-spacing 17))
+  (:spin-button-spacing 17)
+  
+  ;; // ListView
+  ;; typedef enum {
+  ;;     LIST_ITEMS_HEIGHT = 16,     // ListView items height
+  ;;     LIST_ITEMS_SPACING,         // ListView items separation
+  ;;     SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
+  ;;     SCROLLBAR_SIDE,             // ListView scrollbar side (0-left, 1-right)
+  ;; } GuiListViewProperty;
 
-;; // ListView
-;; typedef enum {
-;;     LIST_ITEMS_HEIGHT = 16,     // ListView items height
-;;     LIST_ITEMS_SPACING,         // ListView items separation
-;;     SCROLLBAR_WIDTH,            // ListView scrollbar size (usually width)
-;;     SCROLLBAR_SIDE,             // ListView scrollbar side (0-left, 1-right)
-;; } GuiListViewProperty;
-
-(defcenum gui-list-view-property
   (:list-items-height 16)
   (:list-items-spacing 17)
   (:scrollbar-width 18)
-  (:scrollbar-side 19))
+  (:scrollbar-side 19)
+  
+  ;; // ColorPicker
+  ;; typedef enum {
+  ;;     COLOR_SELECTOR_SIZE = 16,
+  ;;     HUEBAR_WIDTH,               // ColorPicker right hue bar width
+  ;;     HUEBAR_PADDING,             // ColorPicker right hue bar separation from panel
+  ;;     HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
+  ;;     HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
+  ;; } GuiColorPickerProperty;
 
-;; // ColorPicker
-;; typedef enum {
-;;     COLOR_SELECTOR_SIZE = 16,
-;;     HUEBAR_WIDTH,               // ColorPicker right hue bar width
-;;     HUEBAR_PADDING,             // ColorPicker right hue bar separation from panel
-;;     HUEBAR_SELECTOR_HEIGHT,     // ColorPicker right hue bar selector height
-;;     HUEBAR_SELECTOR_OVERFLOW    // ColorPicker right hue bar selector overflow
-;; } GuiColorPickerProperty;
-
-(defcenum gui-color-picker-property
   (:color-selector-size 16)
   (:huebar-width 17)
   (:huebar-padding 18)
@@ -337,10 +319,10 @@
 ;; RAYGUIAPI void GuiSetState(int state);                                  // Set gui state (global state)
 (defcfun "GuiSetState" :void
   "Set gui state (global state)"
-  (state :int))
+  (state gui-state))
 
 ;; RAYGUIAPI int GuiGetState(void);                                        // Get gui state (global state)
-(defcfun "GuiGetState" :int
+(defcfun "GuiGetState" gui-state
   "Get gui state (global state)")
 
 ;; // Font set/get functions
@@ -357,15 +339,15 @@
 ;; RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set one style property
 (defcfun "GuiSetStyle" :void
   "Set one style property"
-  (control :int)
-  (property :int)
+  (control gui-control)
+  (property gui-control-property)
   (value :int))
 
 ;; RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
 (defcfun "GuiGetStyle" :int
   "Get one style property"
-  (control :int)
-  (property :int))
+  (control gui-control)
+  (property gui-control-property))
 
 ;; // Container/separator controls, useful for controls organization
 ;; RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
@@ -726,7 +708,7 @@
 ;; RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
 (defcfun "GuiIconText" :string
   "Get text with icon id prepended (if supported)"
-  (icon-id :int)
+  (icon-id gui-icon-name)
   (text :string))
 
 ;; #if !defined(RAYGUI_NO_ICONS)
@@ -750,7 +732,7 @@
 ;; RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
 (defcfun "GuiDrawIcon" :void
   "Draw icon using pixel size at specified position"
-  (icon-id :int)
+  (icon-id gui-icon-name)
   (pos-x :int)
   (pos-y :int)
   (pixel-size :int)

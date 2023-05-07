@@ -406,13 +406,14 @@
   "Tab Bar control, returns TAB to be closed or -1"
   (let ((foreign-text (gensym))
         (foreign-active (gensym)))
-    `(cffi:with-foreign-objects ((,foreign-text :string)
-                                 (,foreign-active :int))
-       (setf (cffi:mem-ref ,foreign-text :string) ,text
-             (cffi:mem-ref ,foreign-active :int) ,active)
+    `(cffi:with-foreign-objects ((,foreign-active :int)
+                                 (,foreign-text :string (length ,text)))
+       (setf (cffi:mem-ref ,foreign-active :int) ,active)
+       (loop for i from 0
+             for tab in ,text
+             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
        (prog1 (%gui-tab-bar ,bounds ,foreign-text ,count ,foreign-active)
-         (setf ,text (cffi:mem-ref ,foreign-text :string)
-               ,active (cffi:mem-ref ,active :int))))))
+         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
 
 ;; RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll); // Scroll Panel control
 (defcfun ("GuiScrollPanel" %gui-scroll-panel) (:struct cl-raylib::%rectangle)
@@ -426,7 +427,7 @@
   (let ((foreign-scroll (gensym)))
     `(cffi:with-foreign-object (,foreign-scroll '(:struct cl-raylib::%vector2))
        (setf (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)) ,scroll)
-       (prog1 (%gui-scroll-panel bounds text content foreign-scroll)
+       (prog1 (%gui-scroll-panel ,bounds ,text ,content ,foreign-scroll)
          (setf ,scroll (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)))))))
 
 ;; // Basic controls set
@@ -619,7 +620,6 @@
 
 ;; RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
 (defcfun ("GuiListViewEx" %gui-list-view-ex) :int
-  "List View with extended parameters"
   (bounds (:struct cl-raylib::%rectangle))
   (text (:pointer :string))
   (count :int)
@@ -628,19 +628,20 @@
   (active :int))
 
 (defmacro gui-list-view-ex (bounds text count focus scroll-index active)
-  "Value Box control, updates input text with numbers"
+  "List View with extended parameters"
   (let ((foreign-text (gensym))
         (foreign-focus (gensym))
         (foreign-scroll-index (gensym)))
-    `(cffi:with-foreign-objects ((,foreign-text :string)
+    `(cffi:with-foreign-objects ((,foreign-text :string (length ,text))
                                  (,foreign-focus :int)
                                  (,foreign-scroll-index :int))
-       (setf (cffi:mem-ref ,foreign-text :string) ,text
-             (cffi:mem-ref ,foreign-focus :int) ,focus
+       (setf (cffi:mem-ref ,foreign-focus :int) ,focus
              (cffi:mem-ref ,foreign-scroll-index :int) ,scroll-index)
+       (loop for i from 0
+             for tab in ,text
+             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
        (prog1 (%gui-list-view-ex ,bounds ,foreign-text ,count ,foreign-focus ,foreign-scroll-index ,active)
-         (setf ,text (cffi:mem-ref ,foreign-text :string)
-               ,focus (cffi:mem-ref ,foreign-focus :int)
+         (setf ,focus (cffi:mem-ref ,foreign-focus :int)
                ,scroll-index (cffi:mem-ref ,foreign-scroll-index :int))))))
 
 ;; RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
@@ -661,12 +662,12 @@
   (text-max-size :int)
   (secret-view-active (:pointer :int)))
 
-(defmacro gui-list-view-ex (bounds title message buttons text text-max-size secret-view-active)
+(defmacro gui-text-input-box (bounds title message buttons text text-max-size secret-view-active)
   "Text Input Box control, ask for text, supports secret"
   (let ((foreign-secret-view-active (gensym)))
     `(cffi:with-foreign-object (,foreign-secret-view-active :int)
        (setf (cffi:mem-ref ,foreign-secret-view-active :int) ,secret-view-active)
-       (prog1 (%gui-list-view-ex ,bounds ,title ,message ,buttons ,text ,text-max-size ,foreign-secret-view-active)
+       (prog1 (%gui-text-input-box ,bounds ,title ,message ,buttons ,text ,text-max-size ,foreign-secret-view-active)
          (setf ,secret-view-active (cffi:mem-ref ,foreign-secret-view-active :int) )))))
 
 ;; RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)

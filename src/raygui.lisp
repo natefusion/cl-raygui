@@ -26,6 +26,7 @@
   (with-foreign-slots ((control-id property-id property-value) pointer (:struct %gui-style-prop))
     (make-gui-style-prop :control-id control-id :property-id property-id :property-value property-value)))
 
+
 ;; // Gui control state
 ;; typedef enum {
 ;;     STATE_NORMAL = 0,
@@ -47,10 +48,12 @@
 ;;     TEXT_ALIGN_RIGHT,
 ;; } GuiTextAlignment;
 
-(defcenum gui-text-alignment
-  (:text-align-left 0)
-  (:text-align-center 1)
-  (:text-align-right 2))
+(define-constant +text-align-left+ 0)
+(define-constant +text-align-center+ 1)
+(define-constant +text-align-right+ 2)
+(export '(+text-align-left+
+          +text-align-center+
+          +text-align-right+))
 
 ;; // Gui controls
 ;; typedef enum {
@@ -1135,12 +1138,19 @@
 
 ;; // Advance controls set
 ;; RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
-(defcfun "GuiListView" :int
-  "List View control, returns selected list item index"
+(defcfun ("GuiListView" %gui-list-view) :int
   (bounds (:struct cl-raylib::%rectangle))
   (text :string)
   (scroll-index (:pointer :int))
   (active :int))
+
+(defmacro gui-list-view (bounds text scroll-index active)
+  "List View control, returns selected list item index"
+  (let ((foreign-scroll-index (gensym)))
+    `(cffi:with-foreign-object (,foreign-scroll-index :int)
+       (setf (cffi:mem-ref ,foreign-scroll-index :int) ,scroll-index)
+       (prog1 (%gui-list-view ,bounds ,text ,foreign-scroll-index ,active)
+         (setf ,scroll-index (cffi:mem-ref ,foreign-scroll-index :int))))))
 (export 'gui-list-view)
 
 ;; RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters

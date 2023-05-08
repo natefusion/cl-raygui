@@ -29,6 +29,7 @@
   (gui-disable-tooltip)
   (gui-set-tooltip "")
   (gui-load-style-default))
+(export 'reset-state)
 
 (defmacro int-bool (n)
   `(if (eql ,n 1) t nil))

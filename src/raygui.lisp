@@ -273,473 +273,6 @@
 (define-constant +scrollbar-right-side+ 1)
 
 ;; //----------------------------------------------------------------------------------
-;; // Global Variables Definition
-;; //----------------------------------------------------------------------------------
-;; // ...
-
-;; //----------------------------------------------------------------------------------
-;; // Module Functions Declaration
-;; //----------------------------------------------------------------------------------
-
-;; #if defined(__cplusplus)
-;; extern "C" {            // Prevents name mangling of functions
-;; #endif
-
-;; // Global gui state control functions
-;; // Global gui state control functions
-;; RAYGUIAPI void GuiEnable(void);                                         // Enable gui controls (global state)
-(defcfun "GuiEnable" :void
-  "Enable gui controls (global state)")
-
-;; RAYGUIAPI void GuiDisable(void);                                        // Disable gui controls (global state)
-(defcfun "GuiDisable" :void
-  "Disable gui controls (global state)")
-
-;; RAYGUIAPI void GuiLock(void);                                           // Lock gui controls (global state)
-(defcfun "GuiLock" :void
-  "Lock gui controls (global state)")
-
-;; RAYGUIAPI void GuiUnlock(void);                                         // Unlock gui controls (global state)
-(defcfun "GuiUnlock" :void
-  "Unlock gui controls (global state)")
-
-;; RAYGUIAPI bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
-(defcfun ("GuiIsLocked" %gui-is-locked) :int)
-
-;; bool is broken in cffi. this is a workaround
-(defmacro gui-is-locked ()
-  "Check if gui is locked (global state)"
-  (int-bool (%gui-is-locked)))
-
-;; RAYGUIAPI void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
-(defcfun "GuiFade" :void
-  "Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f"
-  (alpha :float))
-
-;; RAYGUIAPI void GuiSetState(int state);                                  // Set gui state (global state)
-(defcfun "GuiSetState" :void
-  "Set gui state (global state)"
-  (state gui-state))
-
-;; RAYGUIAPI int GuiGetState(void);                                        // Get gui state (global state)
-(defcfun "GuiGetState" gui-state
-  "Get gui state (global state)")
-
-;; // Font set/get functions
-;; RAYGUIAPI void GuiSetFont(Font font);                                   // Set gui custom font (global state)
-(defcfun "GuiSetFont" :void
-  "Set gui custom font (global state)"
-  (font (:struct cl-raylib::%font)))
-
-;; RAYGUIAPI Font GuiGetFont(void);                                        // Get gui custom font (global state)
-(defcfun "GuiGetFont" (:struct cl-raylib::%font)
-  "Get gui custom font (global state)")
-
-;; // Style set/get functions
-;; RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set one style property
-(defcfun "GuiSetStyle" :void
-  "Set one style property"
-  (control gui-control)
-  (property gui-control-property)
-  (value :int))
-
-;; RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
-(defcfun "GuiGetStyle" :int
-  "Get one style property"
-  (control gui-control)
-  (property gui-control-property))
-
-;; // Container/separator controls, useful for controls organization
-;; RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
-(defcfun ("GuiWindowBox" %gui-window-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (title :string))
-
-(defmacro gui-window-box (bounds title)
-  "Window Box control, shows a window that can be closed"
-  `(int-bool (%gui-window-box ,bounds ,title)))
-
-;; RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
-(defcfun "GuiGroupBox" :void
-  "Group box control with text name"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
-(defcfun "GuiLine" :void
-  "Line separator control, could contain text"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI void GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
-(defcfun "GuiPanel" :void
-  "Panel control, useful to group controls"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI int GuiTabBar(Rectangle bounds, const char **text, int count, int *active);                   // Tab Bar control, returns TAB to be closed or -1
-(defcfun ("GuiTabBar" %gui-tab-bar) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text (:pointer :string))
-  (count :int)
-  (active (:pointer :int)))
-
-(defmacro gui-tab-bar (bounds text count active)
-  "Tab Bar control, returns TAB to be closed or -1"
-  (let ((foreign-text (gensym))
-        (foreign-active (gensym)))
-    `(cffi:with-foreign-objects ((,foreign-active :int)
-                                 (,foreign-text :string (length ,text)))
-       (setf (cffi:mem-ref ,foreign-active :int) ,active)
-       (loop for i from 0
-             for tab in ,text
-             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
-       (prog1 (%gui-tab-bar ,bounds ,foreign-text ,count ,foreign-active)
-         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
-
-;; RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll); // Scroll Panel control
-(defcfun ("GuiScrollPanel" %gui-scroll-panel) (:struct cl-raylib::%rectangle)
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (content (:struct cl-raylib::%rectangle))
-  (scroll (:pointer (:struct cl-raylib::%vector2))))
-
-(defmacro gui-scroll-panel (bounds text content scroll)
-  "Scroll panel control"
-  (let ((foreign-scroll (gensym)))
-    `(cffi:with-foreign-object (,foreign-scroll '(:struct cl-raylib::%vector2))
-       (setf (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)) ,scroll)
-       (prog1 (%gui-scroll-panel ,bounds ,text ,content ,foreign-scroll)
-         (setf ,scroll (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)))))))
-
-;; // Basic controls set
-;; RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
-(defcfun "GuiLabel" :void
-  "Label control, shows text"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
-(defcfun ("GuiButton" %gui-button) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-(defmacro gui-button (bounds text)
-  "Button control, returns true when clicked"
-  `(int-bool (%gui-button ,bounds ,text)))
-
-;; RAYGUIAPI bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
-(defcfun ("GuiLabelButton" %gui-label-button) :int
-  "Label button control, show true when clicked"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-(defmacro gui-label-button (bounds text)
-  "Label button control, show true when clicked"
-  `(int-bool (%gui-label-button ,bounds ,text)))
-
-;; RAYGUIAPI bool GuiToggle(Rectangle bounds, const char *text, bool active);                              // Toggle Button control, returns true when active
-(defcfun ("GuiToggle" %gui-toggle) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (active :int))
-
-(defmacro gui-toggle (bounds text active)
-  "Toggle button control, returns true when active"
-  `(int-bool (%gui-toggle ,bounds ,text (bool-int ,active))))
-
-;; RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
-(defcfun ("GuiToggleGroup" %gui-toggle-group) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (active :int))
-
-(defmacro gui-toggle-group (bounds text active)
-  "Toggle Group control, returns active toggle index"
-  `(%gui-toggle-group ,bounds ,text (bool-int ,active)))
-
-;; RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
-(defcfun ("GuiCheckBox" %gui-check-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (checked :int))
-
-(defmacro gui-check-box (bounds text checked)
-  "Check Box control, returns true when active"
-  `(int-bool (%gui-check-box ,bounds ,text (bool-int ,checked))))
-
-;; RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
-(defcfun "GuiComboBox" :int
-  "Combo Box control, returns selected item index"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (active :int))
-
-;; RAYGUIAPI bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
-(defcfun ("GuiDropdownBox" %gui-dropdown-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (active (:pointer :int))
-  (edit-mode :int))
-
-(defmacro gui-dropdown-box (bounds text active edit-mode)
-  "Dropdown Box control, returns selected item"
-  (let ((foreign-active (gensym)))
-    `(cffi:with-foreign-object (,foreign-active :int)
-       (setf (cffi:mem-ref ,foreign-active :int) ,active)
-       (prog1 (int-bool (%gui-dropdown-box ,bounds ,text ,foreign-active (bool-int ,edit-mode)))
-         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
-
-;; RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
-(defcfun ("GuiSpinner" %gui-spinner) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (value (:pointer :int))
-  (min-value :int)
-  (max-value :int)
-  (edit-mode :int))
-
-(defmacro gui-spinner (bounds text value min-value max-value edit-mode)
-  "Spinner control, returns selected value"
-  (let ((foreign-value (gensym)))
-    `(cffi:with-foreign-object (,foreign-value :int)
-       (setf (cffi:mem-ref ,foreign-value :int) ,value)
-       (prog1 (int-bool (%gui-spinner ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
-         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
-
-;; RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
-(defcfun ("GuiValueBox" %gui-value-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (value (:pointer :int))
-  (min-value :int)
-  (max-value :int)
-  (edit-mode :int))
-
-(defmacro gui-value-box (bounds text value min-value max-value edit-mode)
-  "Value Box control, updates input text with numbers"
-  (let ((foreign-value (gensym)))
-    `(cffi:with-foreign-object (,foreign-value :int)
-       (setf (cffi:mem-ref ,foreign-value :int) ,value)
-       (prog1 (int-bool (%gui-value-box ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
-         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
-
-;; RAYGUIAPI bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
-(defcfun ("GuiTextBox" %gui-text-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (text-size :int)
-  (edit-mode :int))
-
-(defmacro gui-text-box (bounds text text-size edit-mode)
-  "Text Box control, updates input text"
-  (let ((foreign-text (gensym))
-        (foreign-size (gensym)))
-    `(cffi:with-foreign-pointer (,foreign-text ,text-size ,foreign-size)
-       (cffi:lisp-string-to-foreign ,text ,foreign-text ,foreign-size)
-       (prog1 (int-bool (%gui-text-box ,bounds ,foreign-text ,text-size (bool-int ,edit-mode)))
-         (setf ,text (cffi:foreign-string-to-lisp ,foreign-text))))))
-
-
-;; RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
-(defcfun "GuiSlider" :float
-  "Slider control, returns selected value"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text-left :string)
-  (text-right :string)
-  (value :float)
-  (min-value :float)
-  (max-value :float))
-
-;; RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
-(defcfun "GuiSliderBar" :float
-  "Slider bar control, returns selected value"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text-left :string)
-  (text-right :string)
-  (value :float)
-  (min-value :float)
-  (max-value :float))
-
-;; RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
-(defcfun "GuiProgressBar" :float
-  "Progress Bar control, shows current progress value"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text-left :string)
-  (text-right :string)
-  (value :float)
-  (min-value :float)
-  (max-value :float))
-
-;; RAYGUIAPI void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
-(defcfun "GuiStatusBar" :void
-  "Status Bar control, shows info text"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholder
-(defcfun "GuiDummyRect" :void
-  "Dummy control for placeholer"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string))
-
-;; RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs);              // Grid control, returns mouse cell position
-(defcfun "GuiGrid" (:struct cl-raylib::%vector2)
-  "Grid control, returns mouse cell position"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (spacing :float)
-  (subdivs :int))
-
-;; // Advance controls set
-;; RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
-(defcfun "GuiListView" :int
-  "List View control, returns selected list item index"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (scroll-index (:pointer :int))
-  (active :int))
-
-;; RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
-(defcfun ("GuiListViewEx" %gui-list-view-ex) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (text (:pointer :string))
-  (count :int)
-  (focus (:pointer :int))
-  (scroll-index (:pointer :int))
-  (active :int))
-
-(defmacro gui-list-view-ex (bounds text count focus scroll-index active)
-  "List View with extended parameters"
-  (let ((foreign-text (gensym))
-        (foreign-focus (gensym))
-        (foreign-scroll-index (gensym)))
-    `(cffi:with-foreign-objects ((,foreign-text :string (length ,text))
-                                 (,foreign-focus :int)
-                                 (,foreign-scroll-index :int))
-       (setf (cffi:mem-ref ,foreign-focus :int) ,focus
-             (cffi:mem-ref ,foreign-scroll-index :int) ,scroll-index)
-       (loop for i from 0
-             for tab in ,text
-             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
-       (prog1 (%gui-list-view-ex ,bounds ,foreign-text ,count ,foreign-focus ,foreign-scroll-index ,active)
-         (setf ,focus (cffi:mem-ref ,foreign-focus :int)
-               ,scroll-index (cffi:mem-ref ,foreign-scroll-index :int))))))
-
-;; RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
-(defcfun "GuiMessageBox" :int
-  "Message Box control, displays a message"
-  (bounds (:struct cl-raylib::%rectangle))
-  (title :string)
-  (message :string)
-  (buttons :string))
-
-;; RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive);   // Text Input Box control, ask for text, supports secret
-(defcfun ("GuiTextInputBox" %gui-text-input-box) :int
-  (bounds (:struct cl-raylib::%rectangle))
-  (title :string)
-  (message :string)
-  (buttons :string)
-  (text :string)
-  (text-max-size :int)
-  (secret-view-active (:pointer :int)))
-
-(defmacro gui-text-input-box (bounds title message buttons text text-max-size secret-view-active)
-  "Text Input Box control, ask for text, supports secret"
-  (let ((foreign-secret-view-active (gensym)))
-    `(cffi:with-foreign-object (,foreign-secret-view-active :int)
-       (setf (cffi:mem-ref ,foreign-secret-view-active :int) ,secret-view-active)
-       (prog1 (%gui-text-input-box ,bounds ,title ,message ,buttons ,text ,text-max-size ,foreign-secret-view-active)
-         (setf ,secret-view-active (cffi:mem-ref ,foreign-secret-view-active :int) )))))
-
-;; RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
-(defcfun "GuiColorPicker" :uint
-  "Color Picker control, (multiple color controls)"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (color :uint))
-
-;; RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
-(defcfun "GuiColorPanel" :uint
-  "Color Panel Control"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (color :uint))
-
-;; RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha);                      // Color Bar Alpha control
-(defcfun "GuiColorBarAlpha" :float
-  "Color Bar Alpha control"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (alpha :float))
-
-;; RAYGUIAPI float GuiColorBarHue(Rectangle bounds, const char *text, float value);                        // Color Bar Hue control
-(defcfun "GuiColorBarHue" :float
-  "Color Bar Hue control"
-  (bounds (:struct cl-raylib::%rectangle))
-  (text :string)
-  (value :float))
-
-;; // Styles loading functions
-;; RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
-(defcfun "GuiLoadStyle" :void
-  "Load style file over global style variable (.rgs)"
-  (file-name :string))
-
-;; RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
-(defcfun "GuiLoadStyleDefault" :void
-  "Load style default over global style")
-
-;; // Tooltips management functions
-;; RAYGUIAPI void GuiEnableTooltip(void);                          // Enable gui tooltips (global state)
-(defcfun "GuiEnableTooltip" :void
-  "Enable gui tooltips (global state)")
-
-;; RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui tooltips (global state)
-(defcfun "GuiDisableTooltip" :void
-  "Disable gui tooltips (global state)")
-
-;; RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
-(defcfun "GuiSetTooltip" :void
-  "Set tooltip string"
-  (tooltip :string))
-
-;; // Icons functionality
-;; RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
-(defcfun "GuiIconText" :string
-  "Get text with icon id prepended (if supported)"
-  (icon-id gui-icon-name)
-  (text :string))
-
-;; #if !defined(RAYGUI_NO_ICONS)
-;; RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
-(defcfun "GuiSetIconScale" :void
-  "Set default icon drawing size"
-  (scale :int))
-
-;; RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
-(defcfun "GuiGetIcons" (:pointer :unsigned-int)
-  "Get full icons data pointer")
-
-;; RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
-(defcfun ("GuiLoadIcons" %gui-load-icons) (:pointer :string)
-  (file-name :string)
-  (load-icons-name :int))
-
-(defmacro gui-load-icons (file-name load-icons-name)
-  (%gui-load-icons file-name (bool-int load-icons-name)))
-
-;; RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
-(defcfun "GuiDrawIcon" :void
-  "Draw icon using pixel size at specified position"
-  (icon-id gui-icon-name)
-  (pos-x :int)
-  (pos-y :int)
-  (pixel-size :int)
-  (color :uint))
-
-;; #if !defined(RAYGUI_CUSTOM_ICONS)
-;; //----------------------------------------------------------------------------------
 ;; // Icons enumeration
 ;; //----------------------------------------------------------------------------------
 ;; typedef enum {
@@ -1260,3 +793,507 @@
   (:icon-253 253) 
   (:icon-254 254) 
   (:icon-255 255))
+
+;; // Global gui state control functions
+;; RAYGUIAPI void GuiEnable(void);                                         // Enable gui controls (global state)
+(defcfun "GuiEnable" :void
+  "Enable gui controls (global state)")
+(export 'gui-enable)
+
+;; RAYGUIAPI void GuiDisable(void);                                        // Disable gui controls (global state)
+(defcfun "GuiDisable" :void
+  "Disable gui controls (global state)")
+(export 'gui-disable)
+
+;; RAYGUIAPI void GuiLock(void);                                           // Lock gui controls (global state)
+(defcfun "GuiLock" :void
+  "Lock gui controls (global state)")
+(export 'gui-lock)
+
+;; RAYGUIAPI void GuiUnlock(void);                                         // Unlock gui controls (global state)
+(defcfun "GuiUnlock" :void
+  "Unlock gui controls (global state)")
+(export 'gui-unlock)
+
+;; RAYGUIAPI bool GuiIsLocked(void);                                       // Check if gui is locked (global state)
+(defcfun ("GuiIsLocked" %gui-is-locked) :int)
+
+;; bool is broken in cffi. this is a workaround
+(defmacro gui-is-locked ()
+  "Check if gui is locked (global state)"
+  (int-bool (%gui-is-locked)))
+(export 'gui-is-locked)
+
+;; RAYGUIAPI void GuiFade(float alpha);                                    // Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f
+(defcfun "GuiFade" :void
+  "Set gui controls alpha (global state), alpha goes from 0.0f to 1.0f"
+  (alpha :float))
+(export 'gui-fade)
+
+;; RAYGUIAPI void GuiSetState(int state);                                  // Set gui state (global state)
+(defcfun "GuiSetState" :void
+  "Set gui state (global state)"
+  (state gui-state))
+(export 'gui-set-state)
+
+;; RAYGUIAPI int GuiGetState(void);                                        // Get gui state (global state)
+(defcfun "GuiGetState" gui-state
+  "Get gui state (global state)")
+(export 'gui-get-state)
+
+;; // Font set/get functions
+;; RAYGUIAPI void GuiSetFont(Font font);                                   // Set gui custom font (global state)
+(defcfun "GuiSetFont" :void
+  "Set gui custom font (global state)"
+  (font (:struct cl-raylib::%font)))
+(export 'gui-set-font)
+
+;; RAYGUIAPI Font GuiGetFont(void);                                        // Get gui custom font (global state)
+(defcfun "GuiGetFont" (:struct cl-raylib::%font)
+  "Get gui custom font (global state)")
+(export 'gui-get-font)
+
+;; // Style set/get functions
+;; RAYGUIAPI void GuiSetStyle(int control, int property, int value);       // Set one style property
+(defcfun "GuiSetStyle" :void
+  "Set one style property"
+  (control gui-control)
+  (property gui-control-property)
+  (value :int))
+(export 'gui-set-style)
+
+;; RAYGUIAPI int GuiGetStyle(int control, int property);                   // Get one style property
+(defcfun "GuiGetStyle" :int
+  "Get one style property"
+  (control gui-control)
+  (property gui-control-property))
+(export 'gui-get-style)
+
+;; // Container/separator controls, useful for controls organization
+;; RAYGUIAPI bool GuiWindowBox(Rectangle bounds, const char *title);                                       // Window Box control, shows a window that can be closed
+(defcfun ("GuiWindowBox" %gui-window-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (title :string))
+
+(defmacro gui-window-box (bounds title)
+  "Window Box control, shows a window that can be closed"
+  `(int-bool (%gui-window-box ,bounds ,title)))
+(export 'gui-window-box)
+
+;; RAYGUIAPI void GuiGroupBox(Rectangle bounds, const char *text);                                         // Group Box control with text name
+(defcfun "GuiGroupBox" :void
+  "Group box control with text name"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-group-box)
+
+;; RAYGUIAPI void GuiLine(Rectangle bounds, const char *text);                                             // Line separator control, could contain text
+(defcfun "GuiLine" :void
+  "Line separator control, could contain text"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-line)
+
+;; RAYGUIAPI void GuiPanel(Rectangle bounds, const char *text);                                            // Panel control, useful to group controls
+(defcfun "GuiPanel" :void
+  "Panel control, useful to group controls"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-panel)
+
+;; RAYGUIAPI int GuiTabBar(Rectangle bounds, const char **text, int count, int *active);                   // Tab Bar control, returns TAB to be closed or -1
+(defcfun ("GuiTabBar" %gui-tab-bar) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text (:pointer :string))
+  (count :int)
+  (active (:pointer :int)))
+
+(defmacro gui-tab-bar (bounds text count active)
+  "Tab Bar control, returns TAB to be closed or -1"
+  (let ((foreign-text (gensym))
+        (foreign-active (gensym)))
+    `(cffi:with-foreign-objects ((,foreign-active :int)
+                                 (,foreign-text :string (length ,text)))
+       (setf (cffi:mem-ref ,foreign-active :int) ,active)
+       (loop for i from 0
+             for tab in ,text
+             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
+       (prog1 (%gui-tab-bar ,bounds ,foreign-text ,count ,foreign-active)
+         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
+(export 'gui-tab-bar)
+
+;; RAYGUIAPI Rectangle GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll); // Scroll Panel control
+(defcfun ("GuiScrollPanel" %gui-scroll-panel) (:struct cl-raylib::%rectangle)
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (content (:struct cl-raylib::%rectangle))
+  (scroll (:pointer (:struct cl-raylib::%vector2))))
+
+(defmacro gui-scroll-panel (bounds text content scroll)
+  "Scroll panel control"
+  (let ((foreign-scroll (gensym)))
+    `(cffi:with-foreign-object (,foreign-scroll '(:struct cl-raylib::%vector2))
+       (setf (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)) ,scroll)
+       (prog1 (%gui-scroll-panel ,bounds ,text ,content ,foreign-scroll)
+         (setf ,scroll (cffi:mem-ref ,foreign-scroll '(:struct cl-raylib::%vector2)))))))
+(export 'gui-scroll-panel)
+
+;; // Basic controls set
+;; RAYGUIAPI void GuiLabel(Rectangle bounds, const char *text);                                            // Label control, shows text
+(defcfun "GuiLabel" :void
+  "Label control, shows text"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-label)
+
+;; RAYGUIAPI bool GuiButton(Rectangle bounds, const char *text);                                           // Button control, returns true when clicked
+(defcfun ("GuiButton" %gui-button) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+
+(defmacro gui-button (bounds text)
+  "Button control, returns true when clicked"
+  `(int-bool (%gui-button ,bounds ,text)))
+(export 'gui-button)
+
+;; RAYGUIAPI bool GuiLabelButton(Rectangle bounds, const char *text);                                      // Label button control, show true when clicked
+(defcfun ("GuiLabelButton" %gui-label-button) :int
+  "Label button control, show true when clicked"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+
+(defmacro gui-label-button (bounds text)
+  "Label button control, show true when clicked"
+  `(int-bool (%gui-label-button ,bounds ,text)))
+(export 'gui-label-button)
+
+;; RAYGUIAPI bool GuiToggle(Rectangle bounds, const char *text, bool active);                              // Toggle Button control, returns true when active
+(defcfun ("GuiToggle" %gui-toggle) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (active :int))
+
+(defmacro gui-toggle (bounds text active)
+  "Toggle button control, returns true when active"
+  `(int-bool (%gui-toggle ,bounds ,text (bool-int ,active))))
+(export 'gui-toggle)
+
+;; RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int active);                           // Toggle Group control, returns active toggle index
+(defcfun ("GuiToggleGroup" %gui-toggle-group) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (active :int))
+
+(defmacro gui-toggle-group (bounds text active)
+  "Toggle Group control, returns active toggle index"
+  `(%gui-toggle-group ,bounds ,text (bool-int ,active)))
+(export 'gui-toggle-group)
+
+;; RAYGUIAPI bool GuiCheckBox(Rectangle bounds, const char *text, bool checked);                           // Check Box control, returns true when active
+(defcfun ("GuiCheckBox" %gui-check-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (checked :int))
+
+(defmacro gui-check-box (bounds text checked)
+  "Check Box control, returns true when active"
+  `(int-bool (%gui-check-box ,bounds ,text (bool-int ,checked))))
+(export 'gui-check-box)
+
+;; RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int active);                              // Combo Box control, returns selected item index
+(defcfun "GuiComboBox" :int
+  "Combo Box control, returns selected item index"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (active :int))
+(export 'gui-combo-box)
+
+;; RAYGUIAPI bool GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
+(defcfun ("GuiDropdownBox" %gui-dropdown-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (active (:pointer :int))
+  (edit-mode :int))
+
+(defmacro gui-dropdown-box (bounds text active edit-mode)
+  "Dropdown Box control, returns selected item"
+  (let ((foreign-active (gensym)))
+    `(cffi:with-foreign-object (,foreign-active :int)
+       (setf (cffi:mem-ref ,foreign-active :int) ,active)
+       (prog1 (int-bool (%gui-dropdown-box ,bounds ,text ,foreign-active (bool-int ,edit-mode)))
+         (setf ,active (cffi:mem-ref ,foreign-active :int))))))
+(export 'gui-dropdown-box)
+
+;; RAYGUIAPI bool GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);     // Spinner control, returns selected value
+(defcfun ("GuiSpinner" %gui-spinner) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (value (:pointer :int))
+  (min-value :int)
+  (max-value :int)
+  (edit-mode :int))
+
+(defmacro gui-spinner (bounds text value min-value max-value edit-mode)
+  "Spinner control, returns selected value"
+  (let ((foreign-value (gensym)))
+    `(cffi:with-foreign-object (,foreign-value :int)
+       (setf (cffi:mem-ref ,foreign-value :int) ,value)
+       (prog1 (int-bool (%gui-spinner ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
+         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
+(export 'gui-spinner)
+
+;; RAYGUIAPI bool GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode);    // Value Box control, updates input text with numbers
+(defcfun ("GuiValueBox" %gui-value-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (value (:pointer :int))
+  (min-value :int)
+  (max-value :int)
+  (edit-mode :int))
+
+(defmacro gui-value-box (bounds text value min-value max-value edit-mode)
+  "Value Box control, updates input text with numbers"
+  (let ((foreign-value (gensym)))
+    `(cffi:with-foreign-object (,foreign-value :int)
+       (setf (cffi:mem-ref ,foreign-value :int) ,value)
+       (prog1 (int-bool (%gui-value-box ,bounds ,text ,foreign-value ,min-value ,max-value (bool-int ,edit-mode)))
+         (setf ,value (cffi:mem-ref ,foreign-value :int))))))
+(export 'gui-value-box)
+
+;; RAYGUIAPI bool GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
+(defcfun ("GuiTextBox" %gui-text-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (text-size :int)
+  (edit-mode :int))
+
+(defmacro gui-text-box (bounds text text-size edit-mode)
+  "Text Box control, updates input text"
+  (let ((foreign-text (gensym))
+        (foreign-size (gensym)))
+    `(cffi:with-foreign-pointer (,foreign-text ,text-size ,foreign-size)
+       (cffi:lisp-string-to-foreign ,text ,foreign-text ,foreign-size)
+       (prog1 (int-bool (%gui-text-box ,bounds ,foreign-text ,text-size (bool-int ,edit-mode)))
+         (setf ,text (cffi:foreign-string-to-lisp ,foreign-text))))))
+(export 'gui-text-box)
+
+;; RAYGUIAPI float GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);       // Slider control, returns selected value
+(defcfun "GuiSlider" :float
+  "Slider control, returns selected value"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text-left :string)
+  (text-right :string)
+  (value :float)
+  (min-value :float)
+  (max-value :float))
+(export 'gui-slider)
+
+;; RAYGUIAPI float GuiSliderBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);    // Slider Bar control, returns selected value
+(defcfun "GuiSliderBar" :float
+  "Slider bar control, returns selected value"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text-left :string)
+  (text-right :string)
+  (value :float)
+  (min-value :float)
+  (max-value :float))
+(export 'gui-slider-bar)
+
+;; RAYGUIAPI float GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float value, float minValue, float maxValue);  // Progress Bar control, shows current progress value
+(defcfun "GuiProgressBar" :float
+  "Progress Bar control, shows current progress value"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text-left :string)
+  (text-right :string)
+  (value :float)
+  (min-value :float)
+  (max-value :float))
+(export 'gui-progress-bar)
+
+;; RAYGUIAPI void GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
+(defcfun "GuiStatusBar" :void
+  "Status Bar control, shows info text"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-status-bar)
+
+;; RAYGUIAPI void GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholder
+(defcfun "GuiDummyRect" :void
+  "Dummy control for placeholer"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string))
+(export 'gui-dummy-rect)
+
+;; RAYGUIAPI Vector2 GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs);              // Grid control, returns mouse cell position
+(defcfun "GuiGrid" (:struct cl-raylib::%vector2)
+  "Grid control, returns mouse cell position"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (spacing :float)
+  (subdivs :int))
+(export 'gui-grid)
+
+;; // Advance controls set
+;; RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int active);            // List View control, returns selected list item index
+(defcfun "GuiListView" :int
+  "List View control, returns selected list item index"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (scroll-index (:pointer :int))
+  (active :int))
+(export 'gui-list-view)
+
+;; RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, int *scrollIndex, int active);      // List View with extended parameters
+(defcfun ("GuiListViewEx" %gui-list-view-ex) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (text (:pointer :string))
+  (count :int)
+  (focus (:pointer :int))
+  (scroll-index (:pointer :int))
+  (active :int))
+
+(defmacro gui-list-view-ex (bounds text count focus scroll-index active)
+  "List View with extended parameters"
+  (let ((foreign-text (gensym))
+        (foreign-focus (gensym))
+        (foreign-scroll-index (gensym)))
+    `(cffi:with-foreign-objects ((,foreign-text :string (length ,text))
+                                 (,foreign-focus :int)
+                                 (,foreign-scroll-index :int))
+       (setf (cffi:mem-ref ,foreign-focus :int) ,focus
+             (cffi:mem-ref ,foreign-scroll-index :int) ,scroll-index)
+       (loop for i from 0
+             for tab in ,text
+             do (setf (cffi:mem-aref ,foreign-text :string i) tab))
+       (prog1 (%gui-list-view-ex ,bounds ,foreign-text ,count ,foreign-focus ,foreign-scroll-index ,active)
+         (setf ,focus (cffi:mem-ref ,foreign-focus :int)
+               ,scroll-index (cffi:mem-ref ,foreign-scroll-index :int))))))
+(export 'gui-list-view-ex)
+
+;; RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons);                 // Message Box control, displays a message
+(defcfun "GuiMessageBox" :int
+  "Message Box control, displays a message"
+  (bounds (:struct cl-raylib::%rectangle))
+  (title :string)
+  (message :string)
+  (buttons :string))
+(export 'gui-message-box)
+
+;; RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, int *secretViewActive);   // Text Input Box control, ask for text, supports secret
+(defcfun ("GuiTextInputBox" %gui-text-input-box) :int
+  (bounds (:struct cl-raylib::%rectangle))
+  (title :string)
+  (message :string)
+  (buttons :string)
+  (text :string)
+  (text-max-size :int)
+  (secret-view-active (:pointer :int)))
+
+(defmacro gui-text-input-box (bounds title message buttons text text-max-size secret-view-active)
+  "Text Input Box control, ask for text, supports secret"
+  (let ((foreign-secret-view-active (gensym)))
+    `(cffi:with-foreign-object (,foreign-secret-view-active :int)
+       (setf (cffi:mem-ref ,foreign-secret-view-active :int) ,secret-view-active)
+       (prog1 (%gui-text-input-box ,bounds ,title ,message ,buttons ,text ,text-max-size ,foreign-secret-view-active)
+         (setf ,secret-view-active (cffi:mem-ref ,foreign-secret-view-active :int) )))))
+(export 'gui-text-input-box)
+
+;; RAYGUIAPI Color GuiColorPicker(Rectangle bounds, const char *text, Color color);                        // Color Picker control (multiple color controls)
+(defcfun "GuiColorPicker" :uint
+  "Color Picker control, (multiple color controls)"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (color :uint))
+(export 'gui-color-picker)
+
+;; RAYGUIAPI Color GuiColorPanel(Rectangle bounds, const char *text, Color color);                         // Color Panel control
+(defcfun "GuiColorPanel" :uint
+  "Color Panel Control"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (color :uint))
+(export 'gui-color-panel)
+
+;; RAYGUIAPI float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha);                      // Color Bar Alpha control
+(defcfun "GuiColorBarAlpha" :float
+  "Color Bar Alpha control"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (alpha :float))
+(export 'gui-color-bar-alpha)
+
+;; RAYGUIAPI float GuiColorBarHue(Rectangle bounds, const char *text, float value);                        // Color Bar Hue control
+(defcfun "GuiColorBarHue" :float
+  "Color Bar Hue control"
+  (bounds (:struct cl-raylib::%rectangle))
+  (text :string)
+  (value :float))
+(export 'gui-color-bar-hue)
+
+;; // Styles loading functions
+;; RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
+(defcfun "GuiLoadStyle" :void
+  "Load style file over global style variable (.rgs)"
+  (file-name :string))
+(export 'gui-load-style)
+
+;; RAYGUIAPI void GuiLoadStyleDefault(void);                       // Load style default over global style
+(defcfun "GuiLoadStyleDefault" :void
+  "Load style default over global style")
+(export 'gui-load-style-default)
+
+;; // Tooltips management functions
+;; RAYGUIAPI void GuiEnableTooltip(void);                          // Enable gui tooltips (global state)
+(defcfun "GuiEnableTooltip" :void
+  "Enable gui tooltips (global state)")
+(export 'gui-enable-tooltip)
+
+;; RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui tooltips (global state)
+(defcfun "GuiDisableTooltip" :void
+  "Disable gui tooltips (global state)")
+(export 'gui-disable-tooltip)
+
+;; RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
+(defcfun "GuiSetTooltip" :void
+  "Set tooltip string"
+  (tooltip :string))
+(export 'gui-set-tooltip)
+
+;; // Icons functionality
+;; RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
+(defcfun "GuiIconText" :string
+  "Get text with icon id prepended (if supported)"
+  (icon-id gui-icon-name)
+  (text :string))
+(export 'gui-icon-text)
+
+;; #if !defined(RAYGUI_NO_ICONS)
+;; RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
+(defcfun "GuiSetIconScale" :void
+  "Set default icon drawing size"
+  (scale :int))
+(export 'gui-set-icon-scale)
+
+;; RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
+(defcfun "GuiGetIcons" (:pointer :unsigned-int)
+  "Get full icons data pointer")
+(export 'gui-get-icons)
+
+;; RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
+(defcfun ("GuiLoadIcons" %gui-load-icons) (:pointer :string)
+  (file-name :string)
+  (load-icons-name :int))
+
+(defmacro gui-load-icons (file-name load-icons-name)
+  (%gui-load-icons file-name (bool-int load-icons-name)))
+(export 'gui-load-icons)
+
+;; RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
+(defcfun "GuiDrawIcon" :void
+  "Draw icon using pixel size at specified position"
+  (icon-id gui-icon-name)
+  (pos-x :int)
+  (pos-y :int)
+  (pixel-size :int)
+  (color :uint))
+(export 'gui-draw-icon)
